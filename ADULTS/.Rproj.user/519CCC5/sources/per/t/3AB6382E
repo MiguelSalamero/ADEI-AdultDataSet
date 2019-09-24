@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1569012926438.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3599603298",
+    "id" : "3AB6382E",
+    "lastKnownWriteTime" : 1569012756,
+    "last_content_update" : 1569012756,
+    "path" : "~/FIB/ADEI/ADULTS/Lab2_Data_Preparation20Set19.Rmd",
+    "project_path" : "Lab2_Data_Preparation20Set19.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console",
+        "cursorPosition" : "86,32",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

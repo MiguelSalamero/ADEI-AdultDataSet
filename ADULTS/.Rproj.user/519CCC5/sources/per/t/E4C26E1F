@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1569013328794.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2899267993",
+    "id" : "E4C26E1F",
+    "lastKnownWriteTime" : 1569013306,
+    "last_content_update" : 1569013306,
+    "path" : "~/FIB/ADEI/ADULTS/Lab1_Load_Record13Set19.Rmd",
+    "project_path" : "Lab1_Load_Record13Set19.Rmd",
+    "properties" : {
+        "chunk_output_type" : "console"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

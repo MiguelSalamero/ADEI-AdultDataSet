@@ -1,0 +1,54 @@
+---
+title: "Load Data - Lab1"
+author: "Jo"
+date: "13/9/2019"
+output:
+  word_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+# Load data
+
+Data is adult.data file located in the current active directory
+
+dderdfsdfsdfasdfds
+
+```{r}
+# df= read.table ....
+df<-read.table("adult.data",header=F, sep=",",fill=FALSE,              strip.white=TRUE,na.string="?")
+dim(df)
+names(df)
+
+# Homework: names(df)<-c("age","",)
+names(df)<-c("age", "type.employer", "fnlwgt", "education", "education.num","marital", "occupation", 
+            "relationship", "race","sex", "capital.gain", "capital.loss", 
+            "hr.per.week", "country", "y.bin")
+summary(df)
+```
+
+## Sample selection
+
+You have to initialize generator seed and select a personal sample of 5000 observations
+
+```{r}
+set.seed(28061963)
+sam<-sort(sample(1:nrow(df),5000))
+#sam
+
+# Class: how to find?
+# attributes(df)
+str(df)
+
+# Select your sample
+df<-df[sam,]
+
+```
+
+### Save sample binary file
+
+```{r}
+save(list="df",file="mostra.RData")
+```
+

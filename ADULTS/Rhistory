@@ -1,0 +1,180 @@
+source('F:/ADEI/ADULTS/LABS/Lab1_Load_Data_19_09.R')
+df<-read.table("adult.data",header = FALSE, sep = ",", fill = FALSE, strip.white = TRUE, na.strings = "?")
+View(df)
+View(df)
+dim(df)
+names(df)
+names(df)<-c("age","workclass","fnlwgt","education","education-num",
+"marital-status","occupation","relationship","race","sex","capital-gain",
+"capital-loss","hours-per-week","native-country","Y.bin")
+#
+summary(df)
+#
+set.seed(03011998)
+?sample
+sam<-sample(1:nrow(df),5000)
+sam<-sort(sample(1:nrow(df),5000))
+sam
+#ver clase objeto
+attributes(df)
+#ver clase objeto
+attributes(df)
+#ver clase objeto
+attributes(df)
+str(df)
+set.seed(03011998)
+sam<-sort(sample(1:nrow(df),5000))
+# select your sample
+df<-df[sam,]
+View(df)
+View(df)
+#save
+save(list="df",file = "sample.RData")
+View(df)
+View(df)
+load("F:/ADEI/ADULTS/LABS/sample.RData")
+View(df)
+# Load Required Packages: to be increased over the course
+options(contrasts=c("contr.treatment","contr.treatment"))
+requiredPackages <- c("effects","FactoMineR","car", "factoextra","ggplot2","dplyr","ggmap","ggthemes","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+# Manual installation and loading of package
+install.packages("mlogit")
+library(mlogit)
+# Clear objects
+rm(list=ls())
+# Clear plots
+if(!is.null(dev.list())) dev.off()
+# Command or Windows-like method
+load("sample.RData")
+summary(df)
+names(df)
+vars_con<-names(df)[c(1,3,5,11:13)];vars_con
+var_dis<-names(df)[c(2,4,6:10,14,15)];var_dis
+#si se deja en blanco -> toda la dimenasión
+summary(df[,vars_con])
+vars_con<-names(df)[c(1,3,5,11:13)];vars_con
+var_dis<-names(df)[c(2,4,6:10,14,15)];vars_dis
+vars_con<-names(df)[c(1,3,5,11:13)];vars_con
+vars_dis<-names(df)[c(2,4,6:10,14,15)];vars_dis
+summary(df[,vars_dis])
+levels(df$type.employer)
+levels(df$workclass)
+# Graphic tool for univ EDA and facators
+barplot((table(df$workclass)))
+table(df$workclass
+table(df$workclass)
+table(df$workclass)
+tapply(df$`hours-per-week`,df$workclass,mean)
+ll<-which(df$workclass == "Private");length(ll)
+df$f.type<-l
+df$f.type<-1
+# 2 opciones
+df$f.type[ll]<-2
+ll<-which(df$workclass == "Self-emp-inc");length(ll)
+df$f.type[ll]<-3
+ll<-which(df$workclass %in% c("Self-emp-not-inc","Never-worked","Without-pay"));length(ll)
+df$f.type[ll]<-3
+df$f.type<-1
+ll<-which(df$workclass == "Private");length(ll)
+# 2 opciones
+df$f.type[ll]<-2
+df(ll,"f.type")<-2 # f.type already avaliable
+ll<-which(df$workclass == "Self-emp-inc");length(ll)
+df$f.type[ll]<-3
+ll<-which(df$workclass %in% c("Self-emp-not-inc","Never-worked","Without-pay"));length(ll)
+df$f.type[ll]<-4
+df$f.type<-1
+ll<-which(df$workclass == "Private");length(ll)
+# 2 opciones
+df$f.type[ll]<-2
+ll<-which(df$workclass == "Self-emp-inc");length(ll)
+df$f.type[ll]<-3
+ll<-which(df$workclass %in% c("Self-emp-not-inc","Never-worked","Without-pay"));length(ll)
+df$f.type[ll]<-4
+summary(df$f.type)
+paste0("f.typ-",c("Civil","Private","SelfEm","Other"))
+# Define f.type as a factor and use 'nice' level names
+df$f.type<-factor(df$f.type,levels = 1:4, labels = paste0("f.typ-",c("Civil","Private","SelfEm","Other")))
+summary(df$f.type)
+barplot((table(df$f.type)))
+summary(df)
+levels(df$sex)<-paste0("Sex-",levels(df$sex))
+summary(df$sex)
+# Univariant EDA
+table(df$sex)
+# Univariant EDA
+100*table(df$sex)/nrow(df)
+prop.table(table(df$sex))
+# Graphic tools
+barplot(table(df$sex),main = "Gender observations",col = rainbow(2))
+summary(df$age)
+# Try 4 categoreis first (5-6 max)
+quantile(df$age)
+#f.age -> factor age
+cut(df$age,quantile(df$age))
+df$f.age<-factor(cut(df$age,quantile(df$age)))
+summary(df$f.age)
+?cut
+df$f.age<-factor(cut(df$age,quantile(df$age),include.lowest = T))
+summary(df$f.age)
+# Reasonable according to target?
+tapply(df$`hours-per-week`,df$f.age,median)
+# Reasonable according to target?
+tapply(df$`age`,df$f.age,median)
+# Alternativa para otra situación
+# Alternative breaks defined at 30,40,50
+df$f.age<-factor(cut(df$age,c(17,29,39,49,90),include.lowest = T))
+summary(df$f.age)
+tapply(df$`age`,df$f.age,median) # OK
+levels(df$f.age)<-paste0("f.age-",levels(df$f.age))
+summary(df$f.age)
+# Numeric indicators - statistics
+summary(df$age)
+quantile(df$age)
+seq(0,1,by=0.1)
+quantile(df$age, seq(0,1,by=0.1)) # Decils of df$age
+# Numeric indicators - statistics
+summary(df$age)
+# Desviación tipus
+sd(df$age)
+# Varianza
+var(df$age)
+# Coeficient of variation
+# Dividir sd/mediana de la escala
+df(df$age)/mean(df$age)
+# Coeficient of variation
+# Dividir sd/mediana de la escala
+# Coeficiente más grande de 1 -> liada
+sd(df$age)/mean(df$age)
+# Graphical tools
+hist(df$age)
+hist(df$age, main = "Age Histogram", col = "orange")
+hist(df$age, main = "Age Histogram", col = rainbow(3))
+## Frecuencia relativa y no la división que hace R
+hist(df$age, freq = f main = "Age Histogram", col = rainbow(12))
+## Frecuencia relativa y no la división que hace R
+hist(df$age, freq = f, main = "Age Histogram", col = rainbow(12))
+## Frecuencia relativa y no la división que hace R
+hist(df$age, freq = "f", main = "Age Histogram", col = rainbow(12))
+## Frecuencia relativa y no la división que hace R
+hist(df$age, freq = F, main = "Age Histogram", col = rainbow(12))
+mm<-mean(df$age);dd<-sd(df$age);mm;dd
+# curve() relacionado con el gráfico anterior
+curve(dnorm(x,mean = mm, sd = dd),col = "cyan")
+# curve() relacionado con el gráfico anterior
+curve(dnorm(x,mean = mm, sd = dd),col = "cyan",add=T)
+hist(df$age, freq = F, main = "Age Histogram", col = rainbow(12))
+# curve() relacionado con el gráfico anterior
+curve(dnorm(x,mean = mm, sd = dd),col = "cyan",add=T)
+hist(df$age, freq = F,30, main = "Age Histogram", col = rainbow(12))
+# Outlier detection
+boxplot(df$age)
+# Outlier detection
+boxplot(df$age, main = "Boxplot age")
+## Calcular limites outliers
+summary(df$age)
+abline(h=outsev, col= "red",lwd=1, lty= 2)
+abline(h=outsev, col= "red",lwd=1, lty= 2)

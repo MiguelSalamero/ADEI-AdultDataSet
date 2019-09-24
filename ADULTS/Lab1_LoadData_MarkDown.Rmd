@@ -1,0 +1,66 @@
+---
+title: "Lab1_LoadData"
+author: "Miguel"
+date: "13/9/2019"
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+  
+  ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Load data
+
+Data is adult.data file located in the current active directory
+
+
+```{r}
+# df = read.table
+df<-read.table("adult.data",header = FALSE, sep = ",", fill = FALSE, strip.white = TRUE, na.strings = "?")
+
+# numero filas y columnas
+dim(df)
+
+# nombre de variables del dataframe
+names(df)
+
+
+#c() crear lista
+#names(df) asignar nombres a las variables del data frame
+names(df)<-c("age","workclass","fnlwgt","education","education-num",
+             "marital-status","occupation","relationship","race","sex","capital-gain",
+             "capital-loss","hours-per-week","native-country","Y.bin")
+
+# estadístico no robusto media
+# estadístico robusto (no afectados por outlayers) -> mediana(segundo cuartil), cuartiles, percentiles
+summary(df)
+```
+
+
+###Sample selection
+
+```{r}
+set.seed(03011998)
+sam<-sort(sample(1:nrow(df),5000))
+sam
+
+#ver clase objeto
+attributes(df)
+str(df)
+
+# select your sample
+df<-df[sam,]
+
+#save
+save(list="df",file = "sample.RData")
+
+
+```
+
+
+
+
+
