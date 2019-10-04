@@ -205,27 +205,27 @@ tapply(df$`hours-per-week`,df$education,mean)
 
 
 # Factores para Eduction
-df$f.education<-1 
+df$f.education<-5 
 
 ll<-which(df$education == "HS-grad");length(ll)
 df$f.education[ll]<-2
 
 ll<-which(df$education %in% c("Doctorate","Masters"));length(ll)
-df$f.education[ll]<-3
-
-ll<-which(df$education %in% c("Preschool","1st-4th","5th-6th","7th-8th","9th","10th","11th","12th"));length(ll)
-df$f.education[ll]<-4
-
-ll<-which(df$education == "Some-college");length(ll)
-df$f.education[ll]<-5
-
-ll<-which(df$education %in% c("Assoc-acdm","Assoc-voc","Prof-school"));length(ll)
 df$f.education[ll]<-6
 
-# Check
-paste0("education-",c("Bachelors-Degree","HS-grad","Professional_Degree","No-HS-grad","Some-college","Assoc-Degree_and_Prof"))
+ll<-which(df$education %in% c("Preschool","1st-4th","5th-6th","7th-8th","9th","10th","11th","12th"));length(ll)
+df$f.education[ll]<-1
 
-df$f.education<-factor(df$f.education,levels = 1:6, labels = paste0("education-",c("Bachelors-Degree","HS-grad","Professional_Degree","No-HS-grad","Some-college","Assoc-Degree_and_Prof")))
+ll<-which(df$education == "Some-college");length(ll)
+df$f.education[ll]<-3
+
+ll<-which(df$education %in% c("Assoc-acdm","Assoc-voc","Prof-school"));length(ll)
+df$f.education[ll]<-4
+
+# Check
+#paste0("education-",c("Bachelors-Degree","HS-grad","Professional_Degree","No-HS-grad","Some-college","Assoc-Degree_and_Prof"))
+
+df$f.education<-factor(df$f.education,levels = 1:6, labels = paste0("education-",c("No-HS-grad","HS-grad","Some-college","Assoc-Degree_and_Prof","Bachelors-Degree","Professional_Degree")))
 
 summary(df$f.education)
 barplot((table(df$f.education)))
@@ -270,6 +270,35 @@ table(df$occupation)
 
 tapply(df$`hours-per-week`,df$occupation,mean)
 
+# Sales 
+df$f.occupation<-1
+
+# Service
+ll<-which(df$occupation %in% c("Protective-serv","Priv-house-serv","Other-service", "Tech-support"));length(ll)
+df$f.occupation[ll]<-2
+
+# Specialists
+ll<-which(df$occupation == "Prof-specialty");length(ll)
+df$f.occupation[ll]<-3
+
+# Office_Workers
+ll<-which(df$occupation %in% c("Adm-clerical","Exec-managerial"));length(ll)
+df$f.occupation[ll]<-4
+
+# Logistics&Maintenance
+ll<-which(df$occupation %in% c("Craft-repair","Farming-fishing","Handlers-cleaners", "Machine-op-inspc", "Transport-moving"));length(ll)
+df$f.occupation[ll]<-5
+
+paste0("occupation-",c("Sales","Service","Specialists", "Office_Workers", "Logistics&Maintenance"))
+
+df$f.occupation<-factor(df$f.occupation,levels = 1:5, labels = paste0("occupation-",c("Sales","Service","Specialists", "Office_Workers", "Logistics&Maintenance")))
+
+# Comprobar nueva variable
+summary(df$f.occupation)
+barplot((table(df$f.occupation)))
+
+tapply(df$`hours-per-week`,df$f.occupation,mean)
+
 
 #https://rpubs.com/H_Zhu/235617
 
@@ -284,24 +313,25 @@ barplot((table(df$relationship)))
 table(df$relationship)
 tapply(df$`hours-per-week`,df$relationship,mean)
 
-# Unmarried 
+# Not_Married
 df$f.relationship<-1
 
+# Married
 ll<-which(df$relationship %in% c("Husband", "Wife"));length(ll)
 df$f.relationship[ll]<-2
 
-ll<-which(df$relationship %in% c("Own-child","Other-relative"));length(ll)
+# Own-child
+ll<-which(df$relationship == "Own-child");length(ll)
 df$f.relationship[ll]<-3
 
-ll<-which(df$relationship == "Not-in-family");length(ll)
-df$f.relationship[ll]<-4
+paste0("relationship-",c("Not_Married","Married", "Own-child"))
 
-paste0("relationship-",c("Unmarried","Married","Other-relative","Not-in-family"))
-
-df$f.relationship<-factor(df$f.relationship,levels = 1:4, labels = paste0("relationship-",c("Unmarried","Married","Other-relative","Not-in-family")))
+df$f.relationship<-factor(df$f.relationship,levels = 1:3, labels = paste0("relationship-",c("Not_Married","Married", "Own-child")))
 
 summary(df$f.relationship)
+tapply(df$`hours-per-week`,df$f.relationship,mean)
 barplot((table(df$f.relationship)))
+
 
 ```
 
@@ -393,6 +423,8 @@ df$f.age<-factor(df$f.age,levels = paste0("f.age-",labels))
 ```{r}
 # Factores númericos
 
+
+
 summary(df$`education-num`)
 
 # Try 4 categoreis first (5-6 max)
@@ -408,24 +440,56 @@ tapply(df$`education-num`,df$f.eduNum,median) # not OK
 
 # Alternativa para otra situación
 # Alternative breaks defined at 30,40,50
-df$f.eduNum<-factor(cut(df$`education-num`,c(1,10,13,16),include.lowest = T))
+df$f.eduNum<-factor(cut(df$`education-num`,c(1,7,9,11,16),include.lowest = T))
 summary(df$f.eduNum)
+barplot(table(df$f.eduNum))
+#tapply(df$`capital-gain`,df$f.eduNum,mean)
 
 levels(df$f.eduNum)<-paste0("f.eduNum-",levels(df$f.eduNum))
 summary(df$f.eduNum)
 
-boxplot(df$`education-num`)
-hist(df$`education-num`)
-
-# Intento
-df$f.age<-factor(df$f.age,levels = paste0("f.age-",labels))
-
 #Descriptiva univariante de factors hecha(barplot,..)
+
+
 
 ```
 
 
+## Capital-Gain
 
+```{r}
+# Factores númericos
+
+
+
+summary(df$`education-num`)
+
+# Try 4 categoreis first (5-6 max)
+quantile(df$`education-num`)
+
+#f.edu-num -> factor age
+cut(df$`education-num`,quantile(df$`education-num`))
+df$f.eduNum<-factor(cut(df$`education-num`,quantile(df$`education-num`),include.lowest = T))
+summary(df$f.eduNum)
+
+# Reasonable according to target?
+tapply(df$`education-num`,df$f.eduNum,median) # not OK
+
+# Alternativa para otra situación
+# Alternative breaks defined at 30,40,50
+df$f.eduNum<-factor(cut(df$`education-num`,c(1,7,9,11,16),include.lowest = T))
+summary(df$f.eduNum)
+barplot(table(df$f.eduNum))
+#tapply(df$`capital-gain`,df$f.eduNum,mean)
+
+levels(df$f.eduNum)<-paste0("f.eduNum-",levels(df$f.eduNum))
+summary(df$f.eduNum)
+
+#Descriptiva univariante de factors hecha(barplot,..)
+
+
+
+```
 
 
 ## Univariant EDA - Numeric variables
@@ -472,14 +536,12 @@ curve(dnorm(x,mean = mm, sd = dd),col = "cyan",add=T)
 # Outlier detection
 boxplot(df$age, main = "Boxplot age")
 
-
-# MIRAR ATENEA 
 ## Calcular limites outliers
 summary(df$age)
-outsev<-48+3*(8-27) 
-
+outsev<-48+3*(48-27)
+outsua<-48+1.5*(48-27);outsev;outsua
 # Dibujar linea boxplot
-abline(h=outsev, col= "red",lwd=1, lty= 2)
+abline(h=outsua, col= "red",lwd=1, lty= 2)
 
 
 ```
