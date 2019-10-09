@@ -97,7 +97,8 @@ names(df)
 
 #lista de variables continuas y variables discretas
 vars_con<-names(df)[c(1,3,5,11:13)];vars_con
-vars_dis<-names(df)[c(2,4,6:10,14,15)];vars_dis
+vars_dis<-names(df)[c(2,4,6:10,14:18)];vars_dis
+vars_res<-names(df)[c(13,15)];vars_res
 
 # summary de ciertas columnas [,]si se deja en blanco -> toda la dimenasión
 summary(df[,vars_con])
@@ -108,232 +109,233 @@ summary(df[,vars_dis])
 
 
 
-# Factor preparation
 
-## type.employer = workclass
 
+# Guardar los datos
 ```{r}
-
-# No utilizar attach()
-# Máximo 8 Categorías ?
-# Máximo 7 o 8 categorias dentro de una misma variable
-
-
-levels(df$workclass)
-
-# Graphic tool for univ EDA and facators
-# Table() cuenta cuantas observaciones hay
-# No queremos que queden grupos muy vacios
-barplot((table(df$workclass)))
-table(df$workclass)
-
-# Meter never-worked y without-pay en self-empc-not-inc
-# Private, Self-emp
-
-# User target mean (mirar si tiene sentido agrupación)
-tapply(df$`hours-per-week`,df$workclass,mean)
-
-
-# Crear factores agrupando para workclass
-
-df$f.type<-1
-ll<-which(df$workclass == "Private");length(ll)
-
-# 2 opciones
-df$f.type[ll]<-2
-# Otra opción 
-df(ll,"f.type")<-2 # f.type already avaliable
-
-ll<-which(df$workclass == "Self-emp-inc");length(ll)
-df$f.type[ll]<-3
-
-ll<-which(df$workclass %in% c("Self-emp-not-inc","Never-worked","Without-pay"));length(ll)
-df$f.type[ll]<-4
-
-# Check
-paste0("f.typ-",c("Civil","Private","SelfEm","Other"))
-
-# Define f.type as a factor and use 'nice' level names
-df$f.type<-factor(df$f.type,levels = 1:4, labels = paste0("f.typ-",c("Civil","Private","SelfEm","Other")))
-
-# Comprobar nueva variable
-summary(df$f.type)
-barplot((table(df$f.type)))
-
-
+# Contiene las nuevas variables pero no hemos hecho un tratamiento de la calidad
+save("Adult5000WithMissings.RData")
 ```
 
 
-## race
 
+
+# Lab3
 ```{r}
+# lista vars_res con variables target -> hour.per.week, y.bin, factor.hour.per.week
+#iqr -> distancia intercuantil
 
-levels(df$race)
-
-
-# Graphic tool for univ EDA and facators
-# Table() cuenta cuantas observaciones hay
-# No queremos que queden grupos muy vacios
-barplot((table(df$race)))
-table(df$race)
-
-
-# Meter Amer-Indian-Eskimo, Asian y Other
-
-# User target mean (mirar si tiene sentido agrupación)
-tapply(df$`hours-per-week`,df$race,mean)
-
-
-# Crear factores agrupando para race
-
-df$race.type<-1
-
-ll<-which(df$race == "White");length(ll)
-# 2 opciones
-df$race.type[ll]<-2
-# Otra opción 
-df(ll,"race.type")<-2 # f.type already avaliable
-
-ll<-which(df$race == "Black");length(ll)
-df$race.type[ll]<-3
-
-# ll<-which(df$race %in% c("Amer-Indian-Eskimo","Asian-Pac-Islander","Other"));length(ll)
-# df$race.type[ll]<-4
-
-# Check
-paste0("race-",c("Other","White","Black"))
-
-# Define r.type as a factor and use 'nice' level names (prefijo)
-df$race.type<-factor(df$race.type,levels = 1:3, labels = paste0("race-",c("Other","White","Black")))
-
-# Comprobar nueva variable
-summary(df$race.type)
-barplot((table(df$race.type)))
-
+# en la variable target (hours per week y bin) nada de imputación -> eliminar errores y outliers -> Special treatment
+# convertir outliers/errors en misssing excepto en la variable target
 ```
 
 
 
 
 
+# User-defined functions
+```{r, echo=FALSE}
 
+# Some useful functions
+calcQ <- function(x) {
+  s.x <- summary(x)
+  iqr<-s.x[5]-s.x[2]
+  list(souti=s.x[2]-3*iqr, mouti=s.x[2]-1.5*iqr, min=s.x[1], q1=s.x[2], q2=s.x[3], 
+       q3=s.x[5], max=s.x[6], mouts=s.x[5]+1.5*iqr, souts=s.x[5]+3*iqr ) }
 
-
-
-
-
-
-
-
-
-## Sex - Change label names
-
-```{r}
-
-# concatenar poruqe hay que indicar que male, female pertencen a una variable sex
-#paste0() concatenar
-levels(df$sex)<-paste0("Sex-",levels(df$sex))
-summary(df$sex)
-
-# Univariant EDA
-# Porcentajes
-100*table(df$sex)/nrow(df)
-prop.table(table(df$sex))
-
-# Graphic tools
-barplot(table(df$sex),main = "Gender observations",col = rainbow(2))
-
-
-```
-
-## Numeric Variables - Discretization
-### Age
-
-```{r}
-# Factores númericos
-
-summary(df$age)
-
-# Try 4 categoreis first (5-6 max)
-quantile(df$age)
-
-#f.age -> factor age
-cut(df$age,quantile(df$age))
-df$f.age<-factor(cut(df$age,quantile(df$age),include.lowest = T))
-summary(df$f.age)
-
-# Reasonable according to target?
-tapply(df$`age`,df$f.age,median) # OK
-
-# Alternativa para otra situación
-# Alternative breaks defined at 30,40,50
-df$f.age<-factor(cut(df$age,c(17,29,39,49,90),include.lowest = T))
-summary(df$f.age)
-
-levels(df$f.age)<-paste0("f.age-",levels(df$f.age))
-summary(df$f.age)
-
-# Intento
-df$f.age<-factor(df$f.age,levels = paste0("f.age-",labels))
-
-#Descriptiva univariante de factors hecha(barplot,..)
+countNA <- function(x) {
+  mis_x <- NULL
+  for (j in 1:ncol(x)) {mis_x[j] <- sum(is.na(x[,j])) }
+  mis_x <- as.data.frame(mis_x)
+  rownames(mis_x) <- names(x)
+  mis_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {mis_i <- mis_i + as.numeric(is.na(x[,j])) }
+  list(mis_col=mis_x,mis_ind=mis_i) }
 
 ```
 
 
+# Missing data: initial situation
 
-## Univariant EDA - Numeric variables
+```{r}
+miss<-countNA(df)
+attributes(miss)
+miss$mis_col  # Number of missing values for each variable
+summary(df)
+miss$mis_ind # Number of missing values in variables for each observation
+summary(miss$mis_ind)
+quantile(miss$mis_ind,seq(0,1,0.1))
+```
 
-### age
+# Outliers and Errors: initial situation
+
 ```{r}
 
-# Numeric indicators - statistics
-summary(df$age)
-quantile(df$age)
 
-# Lista de 0 a 1, incremento de 0.1
-seq(0,1,by=0.1)
-quantile(df$age, seq(0,1,by=0.1)) # Decils of df$age
+iout<-rep(0,nrow(df))
+jout<-rep(0,length(vars_con))
 
-# Desviación tipus
-sd(df$age)
-# Varianza
-var(df$age)
+ierr<-rep(0,nrow(df))
+jerr<-rep(0,ncol(df))
+```
+
+## hr.per.week (numeric target)
+
+```{r}
+summ<-summary(df$`hours-per-week`)
+boxplot(df$`hours-per-week`,main="Boxplot hours-per-week",col="orange")
+barplot(table(df$`hours-per-week`))
+
+iqr<-summ[5]-summ[2];iqr
+souts<-summ[5]+3*iqr  # upper threshold
+souti<-summ[2]-3*iqr# lower threshold
+souti;souts
+
+ll<-which((df$`hours-per-week`<souti)|(df$`hours-per-week`>souts));length(ll)
+
+ll<-which((df$`hours-per-week`<5)|(df$`hours-per-week`>80));length(ll)
+
+### Special treatment: target - Errors or Severe outliers - Remove
+
+dff<-df[-ll,]
+
+### End Special treatment: target - Errors or Severe outliers - Remove
+
+# Update iout,jout,ierr,jerr
+jerr[13]<-jerr[13]+length(ll)
+ierr[ll]<-ierr[ll]+1; ierr
+
+calcQ(df$`hours-per-week`)
+
+boxplot(dff$`hours-per-week`,main="Boxplot hr.per.week",col="orange")
+abline(h=calcQ(dff$`hours-per-week`)$souti,lwd=2,col="red",lty=2)
+abline(h=calcQ(dff$`hours-per-week`)$souts,lwd=2,col="red",lty=2)
+
+```
+
+Fer per totes les variables numèriques (outliers i errors) i factors (errors, si cal identifiqueu les categories missing).
 
 
-# Coeficient of variation
-# Dividir sd/mediana de la escala
-# Coeficiente más grande de 1 -> liada
-sd(df$age)/mean(df$age)
+## y.bin (target)
+
+```{r}
+
+summ<-summary(df$Y.bin); summ
+barplot(table(df$Y.bin))
+
+```
 
 
-# Diagramas de barras solo para factores o numericas discretas
 
-# Graphical tools
-hist(df$age)
-hist(df$age, main = "Age Histogram", col = "orange")
-hist(df$age, main = "Age Histogram", col = rainbow(12))
+## Age
 
-## Frecuencia relativa y no la división que hace R
-mm<-mean(df$age);dd<-sd(df$age);mm;dd
-hist(df$age, freq = F, main = "Age Histogram", col = rainbow(12))
-# hist(df$age, freq = F, 30, main = "Age Histogram", col = rainbow(12)) numero de barras
+```{r}
+summ<-summary(df$age);summ
+boxplot(df$age,main="Boxplot age",col="orange")
+barplot(table(df$age))
 
-# curve() relacionado con el gráfico anterior
-curve(dnorm(x,mean = mm, sd = dd),col = "cyan",add=T)
-# se le puede pasar una lista con breaks
+iqr<-summ[5]-summ[2];iqr
+souts<-summ[5]+3*iqr  # upper threshold
+souti<-summ[2]-3*iqr# lower threshold
+souti;souts
 
-# Outlier detection
-boxplot(df$age, main = "Boxplot age")
+ll<-which((df$age<souti)|(df$age>souts));length(ll)
 
 
-# MIRAR ATENEA 
-## Calcular limites outliers
-summary(df$age)
-outsev<-48+3*(8-27) 
+# Update iout,jout,ierr,jerr
 
-# Dibujar linea boxplot
-abline(h=outsev, col= "red",lwd=1, lty= 2)
+calcQ(df$age)
+
+boxplot(dff$age,main="Boxplot age",col="orange")
+abline(h=calcQ(dff$age)$souti,lwd=2,col="red",lty=2)
+abline(h=calcQ(dff$age)$souts,lwd=2,col="red",lty=2)
+```
+
+## Capital-gain
+```{r}
+summ<-summary(df$`capital-gain`);summ
+boxplot(df$`capital-gain`,main="Boxplot capital gain",col="orange")
+barplot(table(df$`capital-gain`))
+
+iqr<-summ[5]-summ[2];iqr
+souts<-summ[5]+3*iqr  # upper threshold
+souti<-summ[2]-3*iqr# lower threshold
+souti;souts
+
+ll<-which((df$`capital-gain`<souti)|(df$`capital-gain`>souts));length(ll)
+
+ll<-which(df$`capital-gain`==99999); length(ll)
+
+# Update iout,jout,ierr,jerr
+# CAMBIAR 13 POR EL CORRECTO
+jerr
+jerr[13]<-jerr[13]+length(ll)
+ierr[ll]<-ierr[ll]+1
+
+```
+
+
+## Workclass
+```{r}
+summ<-summary(df$workclass);summ
+barplot(table(df$workclass))
+
+ll<-which(is.na(df$workclass)); length(ll)
+
+# missings, no hay errores
+
+```
+
+
+
+
+
+
+
+# Imputation
+
+Set some reasonable value to missing data. Missing can be an original missing or an error/outlier set to missing
+
+## Imputation of numeric variables
+
+```{r}
+dff<-df
+#library(missMDA)
+summary(dff[,vars_con])  # Problem with capital_gain
+ll<-which(dff$`capital-gain`==99999); length(ll)
+dff$`capital-gain`[ll]<-NA
+res_num<-imputePCA(dff[,vars_con],ncp = 5)
+summary(res_num$completeObs)
+
+
+
+par(mfrow=c(1,2))
+boxplot(dff$capital.gain)
+boxplot(res_num$completeObs[,"capital.gain"])
+par(mfrow=c(1,1))
+
+dff$`capital-gain`<-res_num[,"capital-gain"]
+
+```
+
+
+
+## Imputation of factors
+
+En las transparencias Data Filtering and Validation
+
+```{r}
+
+#library(missMDA)
+# Categorical imputation
+summary(dff[,vars_dis])  # Problem with NA's
+nb <- estim_ncpMCA(dff[, vars_dis],ncp.max=25)
+res_dis<-imputeMCA(dff[,vars_dis],ncp=25)
+summary(res_dis$completeObs)
+
+
+# pasar los datos obtenidos al data frame
+#dff<-
 
 
 ```
@@ -343,27 +345,10 @@ abline(h=outsev, col= "red",lwd=1, lty= 2)
 
 
 # Guardar los datos
-
-```{r
-
-
-# Contiene las nuevas variables pero no hemos hecho un tratamiento de la calidad
-
-save("Adult5000WithMissings.RData")
-
-```
-
-# Lab3
 ```{r}
-# lista vars_res con variables target -> hour.per.week, y.bin, factor.hour.per.week
-#iqr -> distancia intercuantil
-
-# en la variable target (hours per week y bin) nada de imputación -> eliminar errores y outliers -> Special treatment
-# convertir outliers/errors en misssing excepto en la variable target
-
-
+# Contiene las nuevas variables pero no hemos hecho un tratamiento de la calidad
+save("Adult5000WithoutMissings.RData")
 ```
-
 
 
 
