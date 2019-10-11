@@ -275,6 +275,30 @@ ierr[ll]<-ierr[ll]+1
 ```
 
 
+## Capital-loss
+```{r}
+summ<-summary(df$`capital-loss`);summ
+boxplot(df$`capital-loss`,main="Boxplot Capital-loss",col="orange")
+barplot(table(df$`capital-loss`))
+
+iqr<-summ[5]-summ[2];iqr
+souts<-summ[5]+3*iqr  # upper threshold
+souti<-summ[2]-3*iqr# lower threshold
+souti;souts
+
+ll<-which((df$`capital-loss`<souti)|(df$`capital-loss`>souts));length(ll)
+
+ll<-which(df$`capital-loss`==99999); length(ll)
+
+# Update iout,jout,ierr,jerr
+# CAMBIAR 13 POR EL CORRECTO
+jerr
+jerr[13]<-jerr[13]+length(ll)
+ierr[ll]<-ierr[ll]+1
+```
+
+
+
 ## Workclass
 ```{r}
 summ<-summary(df$workclass);summ
