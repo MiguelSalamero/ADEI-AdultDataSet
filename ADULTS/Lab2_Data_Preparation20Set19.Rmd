@@ -148,10 +148,10 @@ ll<-which(df$workclass %in% c("Self-emp-not-inc","Never-worked","Without-pay"));
 df$f.type[ll]<-4
 
 # Check
-paste0("f.typ-",c("Civil","Private","SelfEm","Other"))
+paste0("f.type-",c("Civil","Private","SelfEm","Other"))
 
 # Define f.type as a factor and use 'nice' level names
-df$f.type<-factor(df$f.type,levels = 1:4, labels = paste0("f.typ-",c("Civil","Private","SelfEm","Other")))
+df$f.type<-factor(df$f.type,levels = 1:4, labels = paste0("f.type-",c("Civil","Private","SelfEm","Other")))
 
 # Comprobar nueva variable
 summary(df$f.type)
@@ -439,7 +439,6 @@ summary(df$f.eduNum)
 tapply(df$`education-num`,df$f.eduNum,median) # not OK
 
 # Alternativa para otra situación
-# Alternative breaks defined at 30,40,50
 df$f.eduNum<-factor(cut(df$`education-num`,c(1,7,9,11,16),include.lowest = T))
 summary(df$f.eduNum)
 barplot(table(df$f.eduNum))
@@ -461,29 +460,102 @@ summary(df$f.eduNum)
 # Factores númericos
 
 
-
-summary(df$`education-num`)
+summary(df$`capital-gain`)
 
 # Try 4 categoreis first (5-6 max)
-quantile(df$`education-num`)
+quantile(df$`capital-gain`)
 
 #f.edu-num -> factor age
-cut(df$`education-num`,quantile(df$`education-num`))
-df$f.eduNum<-factor(cut(df$`education-num`,quantile(df$`education-num`),include.lowest = T))
-summary(df$f.eduNum)
+cut(df$`capital-gain`,quantile(df$`capital-gain`))
+df$f.capGain<-factor(cut(df$`capital-gain`,quantile(df$`capital-gain`),include.lowest = T))
+summary(df$f.capGain)
 
 # Reasonable according to target?
-tapply(df$`education-num`,df$f.eduNum,median) # not OK
+tapply(df$`capital-gain`,df$f.capGain,median) # not OK
 
 # Alternativa para otra situación
-# Alternative breaks defined at 30,40,50
-df$f.eduNum<-factor(cut(df$`education-num`,c(1,7,9,11,16),include.lowest = T))
-summary(df$f.eduNum)
-barplot(table(df$f.eduNum))
-#tapply(df$`capital-gain`,df$f.eduNum,mean)
+df$f.capGain<-factor(cut(df$`capital-gain`,c(0,1,100000),include.lowest = T))
+summary(df$f.capGain)
+barplot(table(df$f.capGain))
+#tapply(df$`capital-gain`,df$f.capGain,mean)
 
-levels(df$f.eduNum)<-paste0("f.eduNum-",levels(df$f.eduNum))
-summary(df$f.eduNum)
+levels(df$f.capGain)<-paste0("f.capGain-",c("NoData","WithData"))
+summary(df$f.capGain)
+barplot(table(df$f.capGain))
+
+#Descriptiva univariante de factors hecha(barplot,..)
+
+
+
+```
+
+
+## Capital-Loss
+
+```{r}
+# Factores númericos
+
+
+summary(df$`capital-loss`)
+
+# Try 4 categoreis first (5-6 max)
+quantile(df$`capital-loss`)
+
+#f.edu-num -> factor age
+cut(df$`capital-loss`,quantile(df$`capital-loss`))
+df$f.capGain<-factor(cut(df$`capital-loss`,quantile(df$`capital-loss`),include.lowest = T))
+summary(df$f.capLoss)
+
+# Reasonable according to target?
+tapply(df$`capital-loss`,df$f.capLoss,median) # not OK
+
+# Alternativa para otra situación
+df$f.capLoss<-factor(cut(df$`capital-loss`,c(0,1,100000),include.lowest = T))
+summary(df$f.capLoss)
+barplot(table(df$f.capLoss))
+#tapply(df$`capital-loss`,df$f.capLoss,mean)
+
+levels(df$f.capLoss)<-paste0("f.capLoss-",c("NoData","WithData"))
+summary(df$f.capLoss)
+barplot(table(df$f.capLoss))
+
+#Descriptiva univariante de factors hecha(barplot,..)
+
+
+
+```
+
+
+
+## Hours-Per-Week
+
+```{r}
+# Factores númericos
+
+
+
+summary(df$`hours-per-week`)
+
+# Try 4 categoreis first (5-6 max)
+quantile(df$`hours-per-week`)
+
+#f.edu-num -> factor age
+cut(df$`hours-per-week`,quantile(df$`hours-per-week`))
+df$f.hoursPW<-factor(cut(df$`hours-per-week`,quantile(df$`hours-per-week`),include.lowest = T))
+summary(df$f.hoursPW)
+
+# Reasonable according to target?
+tapply(df$`hours-per-week`,df$f.hoursPW,median) # not OK
+
+# Alternativa para otra situación
+df$f.hoursPW<-factor(cut(df$`hours-per-week`,c(0,30,39,40,50,100),include.lowest = T))
+summary(df$f.hoursPW)
+barplot(table(df$f.hoursPW))
+#tapply(df$`hours-per-week`,df$f.hoursPW,mean)
+
+levels(df$f.hoursPW)<-paste0("f.hoursPW-",levels(df$f.hoursPW))
+summary(df$f.hoursPW)
+barplot(table(df$f.hoursPW))
 
 #Descriptiva univariante de factors hecha(barplot,..)
 
