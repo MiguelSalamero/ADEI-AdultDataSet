@@ -1,18 +1,18 @@
 ---
 title: "Income Census Dataset"
-author: "Lidia Montero"
+author: "Ricard Hidalgo & Miguel Salamero"
 date: \today
 output:
-  html_document:
-    toc: no
+  word_document:
+    toc: yes
     toc_depth: '4'
   pdf_document:
     latex_engine: pdflatex
     number_sections: yes
     toc_depth: 4
     toc: yes
-  word_document:
-    toc: yes
+  html_document:
+    toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
 fontsize: 12pt
@@ -61,18 +61,18 @@ Create lists: Unordered * and +     or   ordered   1. 2.
 ```{r}
 # Load Required Packages: to be increased over the course
 
-options(contrasts=c("contr.treatment","contr.treatment"))
+#options(contrasts=c("contr.treatment","contr.treatment"))
 
-requiredPackages <- c("effects","FactoMineR","car", "factoextra","ggplot2","dplyr","ggmap","ggthemes","knitr")
-missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+#requiredPackages <- c("effects","FactoMineR","car", "factoextra","ggplot2","dplyr","ggmap","ggthemes","knitr")
+#missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
 
-if(length(missingPackages)) install.packages(missingPackages)
+#if(length(missingPackages)) install.packages(missingPackages)
 
-lapply(requiredPackages, require, character.only = TRUE)
+#lapply(requiredPackages, require, character.only = TRUE)
 
 # Manual installation and loading of package
-install.packages("mlogit")
-library(mlogit)
+#install.packages("mlogit")
+#library(mlogit)
 
 ```
 
@@ -93,548 +93,467 @@ summary(df)
 
 ```{r}
 names(df)
-
 #lista de variables continuas y variables discretas
 vars_con<-names(df)[c(1,3,5,11:13)];vars_con
 vars_dis<-names(df)[c(2,4,6:10,14,15)];vars_dis
 
-# summary de ciertas columnas [,]si se deja en blanco -> toda la dimenasión
 summary(df[,vars_con])
 summary(df[,vars_dis])
-
-
 ```
 
 # Factor preparation
 
-## type.employer = workclass
+## Workclass
 
 ```{r}
-
-# No utilizar attach()
-# Máximo 8 Categorías ?
-# Máximo 7 o 8 categorias dentro de una misma variable
-
-
 levels(df$workclass)
-
-# Graphic tool for univ EDA and facators
-# Table() cuenta cuantas observaciones hay
-# No queremos que queden grupos muy vacios
-barplot((table(df$workclass)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$workclass)), main = "Workclass observations", col = grey.colors(8))
 table(df$workclass)
-
-# Meter never-worked y without-pay en self-empc-not-inc
-# Private, Self-emp
-
-# User target mean (mirar si tiene sentido agrupación)
+# numeric target mean
 tapply(df$`hours-per-week`,df$workclass,mean)
 
-
-# Crear factores agrupando para workclass
-
-df$f.type<-1
+# Civil
+df$f.workclass<-1
+# Private
 ll<-which(df$workclass == "Private");length(ll)
-
-# 2 opciones
-df$f.type[ll]<-2
-# Otra opción 
-df(ll,"f.type")<-2 # f.type already avaliable
-
+df$f.workclass[ll]<-2
+# SelfEmp
 ll<-which(df$workclass == "Self-emp-inc");length(ll)
-df$f.type[ll]<-3
-
+df$f.workclass[ll]<-3
+# Other
 ll<-which(df$workclass %in% c("Self-emp-not-inc","Never-worked","Without-pay"));length(ll)
-df$f.type[ll]<-4
+df$f.workclass[ll]<-4
+# Define f.workclass as a factor
+df$f.workclass<-factor(df$f.workclass,levels = 1:4, labels = paste0("workclass-",c("Civil","Private","SelfEmp","Other")))
 
-# Check
-paste0("f.type-",c("Civil","Private","SelfEm","Other"))
-
-# Define f.type as a factor and use 'nice' level names
-df$f.type<-factor(df$f.type,levels = 1:4, labels = paste0("f.type-",c("Civil","Private","SelfEm","Other")))
-
-# Comprobar nueva variable
-summary(df$f.type)
-barplot((table(df$f.type)))
-
-
+# New variable f.workclass
+summary(df$f.workclass)
+barplot((table(df$f.workclass)), main = "df$f.workclass observations", col = grey.colors(4))
 ```
 
-## race
+## Race
 
 ```{r}
-
 levels(df$race)
-
-# Graphic tool for univ EDA and facators
-# Table() cuenta cuantas observaciones hay
-# No queremos que queden grupos muy vacios
-barplot((table(df$race)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$race)), main = "Race observations", col = grey.colors(5))
 table(df$race)
-
-# User target mean (mirar si tiene sentido agrupación)
+# numeric target mean
 tapply(df$`hours-per-week`,df$race,mean)
 
-df$race.type<-1
-
+# Other
+df$f.race<-1
+# White
 ll<-which(df$race == "White");length(ll)
-# 2 opciones
-df$race.type[ll]<-2
-# Otra opción 
-#df(ll,"race.type")<-2 # f.type already avaliable
-
+df$f.race[ll]<-2
+# Black
 ll<-which(df$race == "Black");length(ll)
-df$race.type[ll]<-3
+df$f.race[ll]<-3
+# Define f.race as a factor
+df$f.race<-factor(df$f.race,levels = 1:3, labels = paste0("race-",c("Other","White","Black")))
 
-# Define r.type as a factor and use 'nice' level names (prefijo)
-df$race.type<-factor(df$race.type,levels = 1:3, labels = paste0("race-",c("Other","White","Black")))
-
-# Comprobar nueva variable
-summary(df$race.type)
-barplot((table(df$race.type)))
+# New variable f.race
+summary(df$f.race)
+barplot((table(df$f.race)), main = "df$f.race observations", col = grey.colors(3))
 ```
 
 ## Education
 
 ```{r}
-
 levels(df$education)
-barplot((table(df$education)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$education)), main = "Education observations", col = grey.colors(16))
 table(df$education)
+# numeric target mean
 tapply(df$`hours-per-week`,df$education,mean)
 
-
-# Factores para Eduction
+# Bachelor's degree
 df$f.education<-5 
-
-ll<-which(df$education == "HS-grad");length(ll)
-df$f.education[ll]<-2
-
-ll<-which(df$education %in% c("Doctorate","Masters"));length(ll)
-df$f.education[ll]<-6
-
+# No High School grad
 ll<-which(df$education %in% c("Preschool","1st-4th","5th-6th","7th-8th","9th","10th","11th","12th"));length(ll)
 df$f.education[ll]<-1
-
+# High school grad
+ll<-which(df$education == "HS-grad");length(ll)
+df$f.education[ll]<-2
+# Some college
 ll<-which(df$education == "Some-college");length(ll)
 df$f.education[ll]<-3
-
+# Associate degree & Prof School
 ll<-which(df$education %in% c("Assoc-acdm","Assoc-voc","Prof-school"));length(ll)
 df$f.education[ll]<-4
+# Professional degree
+ll<-which(df$education %in% c("Doctorate","Masters"));length(ll)
+df$f.education[ll]<-6
+df$f.education<-factor(df$f.education,levels = 1:6, labels = paste0("edu-",c("No_HSgrad","HSgrad","SomeCollege","Assoc_Degree&Prof","Bach_Degree","Prof_Degree")))
 
-# Check
-#paste0("education-",c("Bachelors-Degree","HS-grad","Professional_Degree","No-HS-grad","Some-college","Assoc-Degree_and_Prof"))
-
-df$f.education<-factor(df$f.education,levels = 1:6, labels = paste0("education-",c("No-HS-grad","HS-grad","Some-college","Assoc-Degree_and_Prof","Bachelors-Degree","Professional_Degree")))
-
+# New variable f.education
 summary(df$f.education)
-barplot((table(df$f.education)))
-
+barplot((table(df$f.education)), main = "df$f.education observations", col = grey.colors(6))
 ```
 
 ## Marital-status
 
 ```{r}
-
 levels(df$`marital-status`)
-barplot((table(df$`marital-status`)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$`marital-status`)), main = "Marital status observations", col = grey.colors(7))
 table(df$`marital-status`)
+# numeric target mean
 tapply(df$`hours-per-week`,df$`marital-status`,mean)
 
 # Married 
 df$f.maritalStatus<-1
-
+# Never married
 ll<-which(df$`marital-status` == "Never-married");length(ll)
 df$f.maritalStatus[ll]<-2
-
+# Divorced, Separated & Widowed
 ll<-which(df$`marital-status` %in% c("Divorced","Separated","Widowed"));length(ll)
 df$f.maritalStatus[ll]<-3
+df$f.maritalStatus<-factor(df$f.maritalStatus,levels = 1:3, labels = paste0("maritalStat-",c("Married","Never_married","Divorced&Widowed")))
 
-paste0("maritalStatus-",c("Married","Never-married","Divorced or Widowed"))
-
-df$f.maritalStatus<-factor(df$f.maritalStatus,levels = 1:3, labels = paste0("maritalStatus-",c("Married","Never-married","Divorced or Widowed")))
-
-# Comprobar nueva variable
+# New variable f.maritalStatus
 summary(df$f.maritalStatus)
-barplot((table(df$f.maritalStatus)))
-
+barplot((table(df$f.maritalStatus)), main = "df$f.maritalStatus observations", col = grey.colors(3))
 ```
 
 ## Occupation
 
 ```{r}
-
 levels(df$occupation)
-barplot((table(df$occupation)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$occupation)), main = "Occupation observations", col = grey.colors(14))
 table(df$occupation)
-
+# numeric target mean
 tapply(df$`hours-per-week`,df$occupation,mean)
 
 # Sales 
 df$f.occupation<-1
-
 # Service
 ll<-which(df$occupation %in% c("Protective-serv","Priv-house-serv","Other-service", "Tech-support"));length(ll)
 df$f.occupation[ll]<-2
-
 # Specialists
 ll<-which(df$occupation == "Prof-specialty");length(ll)
 df$f.occupation[ll]<-3
-
 # Office_Workers
 ll<-which(df$occupation %in% c("Adm-clerical","Exec-managerial"));length(ll)
 df$f.occupation[ll]<-4
-
 # Logistics&Maintenance
 ll<-which(df$occupation %in% c("Craft-repair","Farming-fishing","Handlers-cleaners", "Machine-op-inspc", "Transport-moving"));length(ll)
 df$f.occupation[ll]<-5
+df$f.occupation<-factor(df$f.occupation,levels = 1:5, labels = paste0("occup-",c("Sales","Service","Specialists", "Office_Workers", "Logistics&Maintenance")))
 
-paste0("occupation-",c("Sales","Service","Specialists", "Office_Workers", "Logistics&Maintenance"))
-
-df$f.occupation<-factor(df$f.occupation,levels = 1:5, labels = paste0("occupation-",c("Sales","Service","Specialists", "Office_Workers", "Logistics&Maintenance")))
-
-# Comprobar nueva variable
+# New variable f.occupation
 summary(df$f.occupation)
-barplot((table(df$f.occupation)))
-
+barplot((table(df$f.occupation)), main = "df$f.occupation observations", col = grey.colors(5))
 tapply(df$`hours-per-week`,df$f.occupation,mean)
-
-
-#https://rpubs.com/H_Zhu/235617
-
 ```
 
 ## Relationship
 
 ```{r}
-
 levels(df$relationship)
-barplot((table(df$relationship)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$relationship)), main = "Relationship observations", col = grey.colors(6))
 table(df$relationship)
+# numeric target mean
 tapply(df$`hours-per-week`,df$relationship,mean)
 
-# Not_Married
+# Unmarried, Not in family & Other relative
 df$f.relationship<-1
-
-# Married
-ll<-which(df$relationship %in% c("Husband", "Wife"));length(ll)
+# Husband
+ll<-which(df$relationship %in% c("Husband"));length(ll)
 df$f.relationship[ll]<-2
-
+# Wife
+ll<-which(df$relationship %in% c("Wife"));length(ll)
+df$f.relationship[ll]<-3
 # Own-child
 ll<-which(df$relationship == "Own-child");length(ll)
-df$f.relationship[ll]<-3
+df$f.relationship[ll]<-4
+df$f.relationship<-factor(df$f.relationship,levels = 1:4, labels = paste0("relationship-",c("Unmarried","Husband","Wife", "Own_child")))
 
-paste0("relationship-",c("Not_Married","Married", "Own-child"))
-
-df$f.relationship<-factor(df$f.relationship,levels = 1:3, labels = paste0("relationship-",c("Not_Married","Married", "Own-child")))
-
+# New variable f.relationship
 summary(df$f.relationship)
 tapply(df$`hours-per-week`,df$f.relationship,mean)
-barplot((table(df$f.relationship)))
-
-
+barplot((table(df$f.relationship)), main = "df$f.relationship observations", col = grey.colors(4))
 ```
 
-## Sex - Change label names
+## Sex
 
 ```{r}
-
-# concatenar poruqe hay que indicar que male, female pertencen a una variable sex
-#paste0() concatenar
 levels(df$sex)<-paste0("Sex-",levels(df$sex))
 summary(df$sex)
 
 # Univariant EDA
-# Porcentajes
+# Percentages
 100*table(df$sex)/nrow(df)
 prop.table(table(df$sex))
 
 # Graphic tools
-barplot(table(df$sex),main = "Gender observations",col = rainbow(2))
-
+barplot(table(df$sex),main = "Gender observations",col = grey.colors(2))
 ```
 
 ## Native-country
 
 ```{r}
 levels(df$`native-country`)
-barplot((table(df$`native-country`)))
+# Graphic tool for univ EDA and factors
+barplot((table(df$`native-country`)), main = "Native country observations", col = grey.colors(10))
 table(df$`native-country`)
 tapply(df$`hours-per-week`,df$`native-country`,mean)
 
-# Unmarried 
+# Rest of the world
 df$f.nativeCountry<-1
-
+# USA
 ll<-which(df$`native-country` == "United-States");length(ll)
 df$f.nativeCountry[ll]<-2
+df$f.nativeCountry<-factor(df$f.nativeCountry,levels = 1:2, labels = paste0("NativeCountry-",c("Other","USA")))
 
-#ll<-which(df$`native-country` %in% c("Own-child","Other-relative"));length(ll)
-#df$f.nativeCountry[ll]<-3
-
-
-
-paste0("Native-country-",c("Other","USA"))
-
-df$f.nativeCountry<-factor(df$f.nativeCountry,levels = 1:2, labels = paste0("Native-country-",c("Other","USA")))
-
+# New variable f.nativeCountry
 summary(df$f.nativeCountry)
-barplot((table(df$f.nativeCountry)))
+barplot((table(df$f.nativeCountry)), main = "df$f.nativeCountry observations", col = grey.colors(2))
 ```
-
-
 
 
 ## Numeric Variables - Discretization
+
 ### Age
 
 ```{r}
-# Factores númericos
-
 summary(df$age)
-
-# Try 4 categoreis first (5-6 max)
+# Try 4 categoreis first
 quantile(df$age)
-
-#f.age -> factor age
 cut(df$age,quantile(df$age))
 df$f.age<-factor(cut(df$age,quantile(df$age),include.lowest = T))
 summary(df$f.age)
-
 # Reasonable according to target?
 tapply(df$`age`,df$f.age,median) # OK
 
-# Alternativa para otra situación
-# Alternative breaks defined at 30,40,50
+# Breaks defined at 30,40,50
 df$f.age<-factor(cut(df$age,c(17,29,39,49,90),include.lowest = T))
-summary(df$f.age)
 
+# New variable f.age
 levels(df$f.age)<-paste0("f.age-",levels(df$f.age))
 summary(df$f.age)
-
-# Intento
-df$f.age<-factor(df$f.age,levels = paste0("f.age-",labels))
-
-#Descriptiva univariante de factors hecha(barplot,..)
-
+barplot(table(df$f.age), main = "df$f.age observations", col = grey.colors(4))
 ```
 
-## Eduction-num
+### Eduction-num
 
 ```{r}
-# Factores númericos
-
-
-
 summary(df$`education-num`)
-
-# Try 4 categoreis first (5-6 max)
+# Try 4 categoreis first
 quantile(df$`education-num`)
-
-#f.edu-num -> factor age
 cut(df$`education-num`,quantile(df$`education-num`))
 df$f.eduNum<-factor(cut(df$`education-num`,quantile(df$`education-num`),include.lowest = T))
 summary(df$f.eduNum)
-
 # Reasonable according to target?
-tapply(df$`education-num`,df$f.eduNum,median) # not OK
+tapply(df$`education-num`,df$f.eduNum,median) # NOT OK
 
-# Alternativa para otra situación
+# Breaks defined at 7,9,11
 df$f.eduNum<-factor(cut(df$`education-num`,c(1,7,9,11,16),include.lowest = T))
 summary(df$f.eduNum)
-barplot(table(df$f.eduNum))
-#tapply(df$`capital-gain`,df$f.eduNum,mean)
+# tapply with df$`hours-per-week`
+tapply(df$`hours-per-week`,df$f.eduNum,mean)
+# tapply with df$capital-gain
+tapply(df$`capital-gain`,df$f.eduNum,mean)
 
+# New variable f.eduNum
 levels(df$f.eduNum)<-paste0("f.eduNum-",levels(df$f.eduNum))
 summary(df$f.eduNum)
-
-#Descriptiva univariante de factors hecha(barplot,..)
-
-
-
+barplot(table(df$f.eduNum), main = "df$f.eduNum observations", col =  grey.colors(4))
 ```
 
-
-## Capital-Gain
+### Capital-Gain
 
 ```{r}
-# Factores númericos
-
-
 summary(df$`capital-gain`)
-
-# Try 4 categoreis first (5-6 max)
+# Try 4 categoreis first
 quantile(df$`capital-gain`)
+# Not reasonable categories
 
-#f.edu-num -> factor age
-cut(df$`capital-gain`,quantile(df$`capital-gain`))
-df$f.capGain<-factor(cut(df$`capital-gain`,quantile(df$`capital-gain`),include.lowest = T))
-summary(df$f.capGain)
-
-# Reasonable according to target?
-tapply(df$`capital-gain`,df$f.capGain,median) # not OK
-
-# Alternativa para otra situación
+# Break defined at 1
 df$f.capGain<-factor(cut(df$`capital-gain`,c(0,1,100000),include.lowest = T))
 summary(df$f.capGain)
-barplot(table(df$f.capGain))
-#tapply(df$`capital-gain`,df$f.capGain,mean)
 
+# New variable f.capGain
 levels(df$f.capGain)<-paste0("f.capGain-",c("NoData","WithData"))
 summary(df$f.capGain)
-barplot(table(df$f.capGain))
-
-#Descriptiva univariante de factors hecha(barplot,..)
-
-
-
+barplot(table(df$f.capGain), main = "df$f.capGain observations", col = grey.colors(2))
 ```
 
-
-## Capital-Loss
+### Capital-Loss
 
 ```{r}
-# Factores númericos
-
-
 summary(df$`capital-loss`)
-
-# Try 4 categoreis first (5-6 max)
+# Try 4 categoreis first
 quantile(df$`capital-loss`)
+# Not reasonable categories
 
-#f.edu-num -> factor age
-cut(df$`capital-loss`,quantile(df$`capital-loss`))
-df$f.capGain<-factor(cut(df$`capital-loss`,quantile(df$`capital-loss`),include.lowest = T))
-summary(df$f.capLoss)
-
-# Reasonable according to target?
-tapply(df$`capital-loss`,df$f.capLoss,median) # not OK
-
-# Alternativa para otra situación
+# Break defined at 1
 df$f.capLoss<-factor(cut(df$`capital-loss`,c(0,1,100000),include.lowest = T))
 summary(df$f.capLoss)
-barplot(table(df$f.capLoss))
-#tapply(df$`capital-loss`,df$f.capLoss,mean)
 
+# New variable f.capLoss
 levels(df$f.capLoss)<-paste0("f.capLoss-",c("NoData","WithData"))
 summary(df$f.capLoss)
-barplot(table(df$f.capLoss))
-
-#Descriptiva univariante de factors hecha(barplot,..)
-
-
-
+barplot(table(df$f.capLoss), main = "df$f.capLoss observations", col = grey.colors(2))
 ```
 
-
-
-## Hours-Per-Week
+### Hours-Per-Week
 
 ```{r}
-# Factores númericos
-
-
-
 summary(df$`hours-per-week`)
-
-# Try 4 categoreis first (5-6 max)
+# Try 4 categoreis first
 quantile(df$`hours-per-week`)
+# Not reasonable categories
 
-#f.edu-num -> factor age
-cut(df$`hours-per-week`,quantile(df$`hours-per-week`))
-df$f.hoursPW<-factor(cut(df$`hours-per-week`,quantile(df$`hours-per-week`),include.lowest = T))
-summary(df$f.hoursPW)
-
-# Reasonable according to target?
-tapply(df$`hours-per-week`,df$f.hoursPW,median) # not OK
-
-# Alternativa para otra situación
+# Breaks defined at 30,40,50
 df$f.hoursPW<-factor(cut(df$`hours-per-week`,c(0,30,39,40,50,100),include.lowest = T))
 summary(df$f.hoursPW)
-barplot(table(df$f.hoursPW))
-#tapply(df$`hours-per-week`,df$f.hoursPW,mean)
+# tapply with df$`hours-per-week`
+tapply(df$`hours-per-week`,df$f.hoursPW,mean)
 
+# New variable f.hoursPW
 levels(df$f.hoursPW)<-paste0("f.hoursPW-",levels(df$f.hoursPW))
 summary(df$f.hoursPW)
-barplot(table(df$f.hoursPW))
-
-#Descriptiva univariante de factors hecha(barplot,..)
-
-
-
+barplot(table(df$f.hoursPW), main = "df$f.hoursPW observations", col = grey.colors(5))
 ```
 
 
-## Univariant EDA - Numeric variables
+### Univariant EDA - Numeric variables
 
-### age
+#### Age
+
 ```{r}
-
 # Numeric indicators - statistics
-summary(df$age)
+summ<-summary(df$age)
 quantile(df$age)
+# Decils of df$age
+quantile(df$age, seq(0,1,by=0.1))
 
-# Lista de 0 a 1, incremento de 0.1
-seq(0,1,by=0.1)
-quantile(df$age, seq(0,1,by=0.1)) # Decils of df$age
-
-# Desviación tipus
+# Standard deviation
 sd(df$age)
-# Varianza
+# Variance 
 var(df$age)
-
-
-# Coeficient of variation
-# Dividir sd/mediana de la escala
-# Coeficiente más grande de 1 -> liada
+# Coefficient of variation
 sd(df$age)/mean(df$age)
 
-
-# Diagramas de barras solo para factores o numericas discretas
-
 # Graphical tools
-hist(df$age)
-hist(df$age, main = "Age Histogram", col = "orange")
-hist(df$age, main = "Age Histogram", col = rainbow(12))
-
-## Frecuencia relativa y no la división que hace R
+hist(df$age, 30, main = "Age Histogram", col = terrain.colors(30))
 mm<-mean(df$age);dd<-sd(df$age);mm;dd
-hist(df$age, freq = F, main = "Age Histogram", col = rainbow(12))
-# hist(df$age, freq = F, 30, main = "Age Histogram", col = rainbow(12)) numero de barras
+hist(df$age, freq = F, 30, main = "Age Histogram", col = terrain.colors(30))
+curve(dnorm(x,mean = mm, sd = dd),col = "red",add=T, lwd = 1)
 
-# curve() relacionado con el gráfico anterior
-curve(dnorm(x,mean = mm, sd = dd),col = "cyan",add=T)
-# se le puede pasar una lista con breaks
-
-# Outlier detection
-boxplot(df$age, main = "Boxplot age")
-
-## Calcular limites outliers
-summary(df$age)
-outsev<-48+3*(48-27)
-outsua<-48+1.5*(48-27);outsev;outsua
-# Dibujar linea boxplot
-abline(h=outsua, col= "red",lwd=1, lty= 2)
-
-
+# Boxplot of age
+boxplot(df$age, main = "Boxplot age", col = "orange")
 ```
 
+#### Education-num
 
+```{r}
+# Numeric indicators - statistics
+summary(df$`education-num`)
+quantile(df$`education-num`)
+# Decils of df$age
+quantile(df$`education-num`, seq(0,1,by=0.1)) 
 
+# Standard deviation
+sd(df$`education-num`)
+# Variance
+var(df$`education-num`)
+# Coefficient of variation
+sd(df$`education-num`)/mean(df$`education-num`)
+
+# Graphical tools
+hist(df$`education-num`, main = "Education-num Histogram", col = terrain.colors(12))
+mm<-mean(df$`education-num`);dd<-sd(df$`education-num`);mm;dd
+hist(df$`education-num`, freq = F, main = "Education-num Histogram", col = terrain.colors(15))
+curve(dnorm(x,mean = mm, sd = dd),col = "red",add=T)
+
+# Boxplot of education-num
+boxplot(df$`education-num`, main = "Boxplot education-num",col = "orange")
+```
+
+#### Capital-gain
+
+```{r}
+# Numeric indicators - statistics
+summary(df$`capital-gain`)
+quantile(df$`capital-gain`)
+# Decils of df$age
+quantile(df$`capital-gain`, seq(0,1,by=0.1)) 
+
+# Standard deviation
+sd(df$`capital-gain`)
+# Variance
+var(df$`capital-gain`)
+# Coefficient of variation
+sd(df$`capital-gain`)/mean(df$`capital-gain`)
+
+# Graphical tools
+hist(df$`capital-gain`, main = "Capital-gain Histogram", col = terrain.colors(3))
+mm<-mean(df$`capital-gain`);dd<-sd(df$`capital-gain`);mm;dd
+hist(df$`capital-gain`, freq = F, main = "Capital-gain Histogram", col = terrain.colors(3))
+curve(dnorm(x,mean = mm, sd = dd),col = "red",add=T)
+
+# Boxplot of capital-gain
+boxplot(df$`capital-gain`, main = "Boxplot Capital-gain", col = "orange")
+```
+
+### Capital-loss
+
+```{r}
+# Numeric indicators - statistics
+summary(df$`capital-loss`)
+quantile(df$`capital-loss`)
+# Decils of df$age
+quantile(df$`capital-loss`, seq(0,1,by=0.1)) 
+
+# Standard deviation
+sd(df$`capital-loss`)
+# Variance
+var(df$`capital-loss`)
+# Coefficient of variation
+sd(df$`capital-loss`)/mean(df$`capital-loss`)
+
+# Graphical tools
+hist(df$`capital-loss`, main = "Capital-loss Histogram", col = terrain.colors(4))
+mm<-mean(df$`capital-loss`);dd<-sd(df$`capital-loss`);mm;dd
+hist(df$`capital-loss`, freq = F, main = "Capital-loss Histogram", col = terrain.colors(4))
+curve(dnorm(x,mean = mm, sd = dd),col = "red",add=T)
+
+# Boxplot of capital-loss
+boxplot(df$`capital-loss`, main = "Boxplot Capital-loss", col = "orange")
+```
+
+### Hours-per-week
+```{r}
+# Numeric indicators - statistics
+summary(df$`hours-per-week`)
+quantile(df$`hours-per-week`)
+# Decils of df$`hours-per-week`
+quantile(df$`hours-per-week`, seq(0,1,by=0.1)) 
+
+# Standard deviation
+sd(df$`hours-per-week`)
+# Variance
+var(df$`hours-per-week`)
+# Coefficient of variation
+sd(df$`hours-per-week`)/mean(df$`hours-per-week`)
+
+# Graphical tools
+hist(df$`hours-per-week`, main = "Hours-per-week Histogram", col = terrain.colors(20))
+mm<-mean(df$`hours-per-week`);dd<-sd(df$`hours-per-week`);mm;dd
+hist(df$`hours-per-week`, freq = F, main = "Hours-per-week Histogram", col = terrain.colors(20))
+curve(dnorm(x,mean = mm, sd = dd),col = "red",add=T)
+
+# Boxplot of Hours-per-week
+boxplot(df$`hours-per-week`, main = "Boxplot Hours-per-week", col = "orange")
+```
 
 
 # Guardar los datos
-
-
 ```{r}
-# Contiene las nuevas variables pero no hemos hecho un tratamiento de la calidad
-save("Adult5000WithMissings.RData")
+save(list="df",file = "Adult5000WithMissings.RData")
 ```
-
-
-
-
-
-
-
-
-

@@ -1,18 +1,18 @@
 ---
 title: "Income Census Dataset"
-author: "Lidia Montero"
+author: "Ricard Hidalgo & Miguel Salamero"
 date: \today
 output:
-  html_document:
-    toc: no
+  word_document:
+    toc: yes
     toc_depth: '4'
   pdf_document:
     latex_engine: pdflatex
     number_sections: yes
     toc_depth: 4
     toc: yes
-  word_document:
-    toc: yes
+  html_document:
+    toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
 fontsize: 12pt
@@ -59,20 +59,20 @@ Create lists: Unordered * and +     or   ordered   1. 2.
 ## Load Packages
 
 ```{r}
-# Load Required Packages: to be increased over the course
+## Load Required Packages: to be increased over the course
 
-options(contrasts=c("contr.treatment","contr.treatment"))
+#options(contrasts=c("contr.treatment","contr.treatment"))
 
-requiredPackages <- c("effects","FactoMineR","car", "chemometrics","missMDA", "factoextra","ggplot2","dplyr","ggmap","ggthemes","knitr")
-missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+#requiredPackages <- c("effects","FactoMineR","car", "chemometrics","missMDA", "factoextra","ggplot2","dplyr","ggmap","ggthemes","knitr")
+#missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
 
-if(length(missingPackages)) install.packages(missingPackages)
+#if(length(missingPackages)) install.packages(missingPackages)
 
-lapply(requiredPackages, require, character.only = TRUE)
+#lapply(requiredPackages, require, character.only = TRUE)
 
 # Manual installation and loading of package
-install.packages("mlogit")
-library(mlogit)
+#install.packages("mlogit")
+#library(mlogit)
 
 ```
 
@@ -86,7 +86,7 @@ if(!is.null(dev.list())) dev.off()
 
 # Command or Windows-like method
 # Muestra acabada lab2 with missings
-load("sample.RData")
+load("Adult5000WithMissings.RData")
 summary(df)
 ```
 
@@ -94,44 +94,14 @@ summary(df)
 
 ```{r}
 names(df)
-
 #lista de variables continuas y variables discretas
-vars_con<-names(df)[c(1,3,5,11:13)];vars_con
-vars_dis<-names(df)[c(2,4,6:10,14:18)];vars_dis
-vars_res<-names(df)[c(13,15)];vars_res
+vars_con<-names(df)[c(1,3,5,11,12,13)];vars_con
+vars_dis<-names(df)[c(2,4,6:10,14:27)];vars_dis
+vars_res<-names(df)[c(13,15,23)];vars_res
 
-# summary de ciertas columnas [,]si se deja en blanco -> toda la dimenasión
 summary(df[,vars_con])
 summary(df[,vars_dis])
-
-
 ```
-
-
-
-
-
-# Guardar los datos
-```{r}
-# Contiene las nuevas variables pero no hemos hecho un tratamiento de la calidad
-save("Adult5000WithMissings.RData")
-```
-
-
-
-
-# Lab3
-```{r}
-# lista vars_res con variables target -> hour.per.week, y.bin, factor.hour.per.week
-#iqr -> distancia intercuantil
-
-# en la variable target (hours per week y bin) nada de imputación -> eliminar errores y outliers -> Special treatment
-# convertir outliers/errors en misssing excepto en la variable target
-```
-
-
-
-
 
 # User-defined functions
 ```{r, echo=FALSE}
@@ -151,9 +121,7 @@ countNA <- function(x) {
   mis_i <- rep(0,nrow(x))
   for (j in 1:ncol(x)) {mis_i <- mis_i + as.numeric(is.na(x[,j])) }
   list(mis_col=mis_x,mis_ind=mis_i) }
-
 ```
-
 
 # Missing data: initial situation
 
@@ -170,8 +138,6 @@ quantile(miss$mis_ind,seq(0,1,0.1))
 # Outliers and Errors: initial situation
 
 ```{r}
-
-
 iout<-rep(0,nrow(df))
 jout<-rep(0,length(vars_con))
 
@@ -184,7 +150,7 @@ jerr<-rep(0,ncol(df))
 ```{r}
 summ<-summary(df$`hours-per-week`)
 boxplot(df$`hours-per-week`,main="Boxplot hours-per-week",col="orange")
-barplot(table(df$`hours-per-week`))
+barplot(table(df$`hours-per-week`), main = "Barplot hours-per-week" )
 
 iqr<-summ[5]-summ[2];iqr
 souts<-summ[5]+3*iqr  # upper threshold
@@ -196,9 +162,7 @@ ll<-which((df$`hours-per-week`<souti)|(df$`hours-per-week`>souts));length(ll)
 ll<-which((df$`hours-per-week`<5)|(df$`hours-per-week`>80));length(ll)
 
 ### Special treatment: target - Errors or Severe outliers - Remove
-
-dff<-df[-ll,]
-
+df<-df[-ll,]
 ### End Special treatment: target - Errors or Severe outliers - Remove
 
 # Update iout,jout,ierr,jerr
@@ -207,32 +171,26 @@ ierr[ll]<-ierr[ll]+1; ierr
 
 calcQ(df$`hours-per-week`)
 
-boxplot(dff$`hours-per-week`,main="Boxplot hr.per.week",col="orange")
-abline(h=calcQ(dff$`hours-per-week`)$souti,lwd=2,col="red",lty=2)
-abline(h=calcQ(dff$`hours-per-week`)$souts,lwd=2,col="red",lty=2)
+boxplot(df$`hours-per-week`,main="Boxplot hr.per.week",col="orange")
+abline(h=calcQ(df$`hours-per-week`)$souti,lwd=2,col="red",lty=2)
+abline(h=calcQ(df$`hours-per-week`)$souts,lwd=2,col="red",lty=2)
 
 ```
-
-Fer per totes les variables numèriques (outliers i errors) i factors (errors, si cal identifiqueu les categories missing).
-
 
 ## y.bin (target)
 
 ```{r}
-
 summ<-summary(df$Y.bin); summ
-barplot(table(df$Y.bin))
-
+barplot(table(df$Y.bin), main = "Y.bin observations")
+# There is no missing or errors
 ```
-
-
 
 ## Age
 
 ```{r}
 summ<-summary(df$age);summ
 boxplot(df$age,main="Boxplot age",col="orange")
-barplot(table(df$age))
+barplot(table(df$age), main = "Barplot df$age")
 
 iqr<-summ[5]-summ[2];iqr
 souts<-summ[5]+3*iqr  # upper threshold
@@ -240,15 +198,13 @@ souti<-summ[2]-3*iqr# lower threshold
 souti;souts
 
 ll<-which((df$age<souti)|(df$age>souts));length(ll)
-
-
-# Update iout,jout,ierr,jerr
+# There is no outlier or error
 
 calcQ(df$age)
 
-boxplot(dff$age,main="Boxplot age",col="orange")
-abline(h=calcQ(dff$age)$souti,lwd=2,col="red",lty=2)
-abline(h=calcQ(dff$age)$souts,lwd=2,col="red",lty=2)
+boxplot(df$age,main="Boxplot age",col="orange")
+abline(h=calcQ(df$age)$souti,lwd=2,col="red",lty=2)
+abline(h=calcQ(df$age)$souts,lwd=2,col="red",lty=2)
 ```
 
 ## Capital-gain
@@ -262,14 +218,18 @@ souts<-summ[5]+3*iqr  # upper threshold
 souti<-summ[2]-3*iqr# lower threshold
 souti;souts
 
+# Potential outliers
 ll<-which((df$`capital-gain`<souti)|(df$`capital-gain`>souts));length(ll)
 
+# Erros in df$capital-gain
 ll<-which(df$`capital-gain`==99999); length(ll)
+# Set missing to erros
+ll<-which(df$`capital-gain`==99999); length(ll)
+df$`capital-gain`[ll]<-NA
 
 # Update iout,jout,ierr,jerr
-# CAMBIAR 13 POR EL CORRECTO
 jerr
-jerr[13]<-jerr[13]+length(ll)
+jerr[11]<-jerr[11]+length(ll)
 ierr[ll]<-ierr[ll]+1
 
 ```
@@ -286,35 +246,22 @@ souts<-summ[5]+3*iqr  # upper threshold
 souti<-summ[2]-3*iqr# lower threshold
 souti;souts
 
+# Potential outliers
 ll<-which((df$`capital-loss`<souti)|(df$`capital-loss`>souts));length(ll)
+# There is no error or outlier
 
-ll<-which(df$`capital-loss`==99999); length(ll)
+calcQ(df$`capital-loss`)
 
-# Update iout,jout,ierr,jerr
-# CAMBIAR 13 POR EL CORRECTO
-jerr
-jerr[13]<-jerr[13]+length(ll)
-ierr[ll]<-ierr[ll]+1
+boxplot(df$`capital-loss`,main="Boxplot age",col="orange")
+abline(h=calcQ(df$`capital-loss`)$souti,lwd=2,col="red",lty=2)
+abline(h=calcQ(df$`capital-loss`)$souts,lwd=2,col="red",lty=2)
 ```
 
-
-
-## Workclass
+## Categorical variables and factors
+The rest of variables do not have errors. They do have missings.
 ```{r}
-summ<-summary(df$workclass);summ
-barplot(table(df$workclass))
-
-ll<-which(is.na(df$workclass)); length(ll)
-
-# missings, no hay errores
-
+summary(df)
 ```
-
-
-
-
-
-
 
 # Imputation
 
@@ -323,63 +270,66 @@ Set some reasonable value to missing data. Missing can be an original missing or
 ## Imputation of numeric variables
 
 ```{r}
-dff<-df
-#library(missMDA)
-summary(dff[,vars_con])  # Problem with capital_gain
-ll<-which(dff$`capital-gain`==99999); length(ll)
-dff$`capital-gain`[ll]<-NA
-res_num<-imputePCA(dff[,vars_con],ncp = 5)
+df<-df
+library(missMDA)
+summary(df[,vars_con])
+# Problem with capital_gain (errors were set to missing values)
+res_num<-imputePCA(df[,vars_con],ncp = 5)
 summary(res_num$completeObs)
 
-
-
+# Comparison
 par(mfrow=c(1,2))
-boxplot(dff$capital.gain)
-boxplot(res_num$completeObs[,"capital.gain"])
+# Original variable capital-gain with errors set to missing valuess
+boxplot(df$`capital-gain`, main = "Original capital-gain")
+boxplot(res_num$completeObs[,"capital-gain"], main = "Inputattion capital-gain")
 par(mfrow=c(1,1))
+res_num
 
-dff$`capital-gain`<-res_num[,"capital-gain"]
-
+# Update df with the imputation of the variable
+df$`capital-gain`<-res_num[,`capital-gain`]
 ```
-
-
 
 ## Imputation of factors
 
-En las transparencias Data Filtering and Validation
-
 ```{r}
-
-#library(missMDA)
+library(missMDA)
 # Categorical imputation
-summary(dff[,vars_dis])  # Problem with NA's
-nb <- estim_ncpMCA(dff[, vars_dis],ncp.max=25)
-res_dis<-imputeMCA(dff[,vars_dis],ncp=25)
+summary(df[,vars_dis])  # Problem with NA's in multiple variables
+#nb <- estim_ncpMCA(df[, vars_dis],ncp.max=30)
+res_dis<-imputeMCA(df[,vars_dis],ncp=30)
 summary(res_dis$completeObs)
 
+# Original variables with missings
+miss$mis_col
+# Data quality analysis
+jerr
 
-# pasar los datos obtenidos al data frame
-#dff<-
+# Comparison
+# Workclass
+# Original variable Workclass with missing valuess
+barplot(table(df$workclass, useNA = "ifany"), main = "Original workclass")
+barplot(table(res_dis$completeObs[,"workclass"], useNA = "ifany"), main = "Inputattion workclass")
 
+# Occupation
+# Original variable Occupation with missing valuess
+barplot(table(df$occupation, useNA = "ifany"), main = "Original occupation")
+barplot(table(res_dis$completeObs[,"occupation"], useNA = "ifany"), main = "Inputattion occupation")
 
+# Native-country
+# Original variable Native-country with missing valuess
+barplot(table(df$`native-country`, useNA = "ifany"), main = "Original native-country")
+barplot(table(res_dis$completeObs[,"native-country"], useNA = "ifany"), main = "Inputattion native-country")
+
+# Update df with imputation
+df$workclass<-res_dis$completeObs[,"workclass"]
+df$occupation<-res_dis$completeObs[,"occupation"]
+df$`native-country`<-res_dis$completeObs[,"native-country"]
+
+summary(df)
 ```
 
-
-
-
-
-# Guardar los datos
+# Save data
 ```{r}
-# Contiene las nuevas variables pero no hemos hecho un tratamiento de la calidad
-save("Adult5000WithoutMissings.RData")
+#save
+#save(list="df",file = "sampleWithNoMiss.RData")
 ```
-
-
-
-
-
-
-
-
-
-
