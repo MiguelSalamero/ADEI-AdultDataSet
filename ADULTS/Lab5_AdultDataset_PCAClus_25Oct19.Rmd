@@ -1,0 +1,125 @@
+---
+title: "Income Census Dataset"
+author: "Lidia Montero"
+date: \today
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include=FALSE}
+# Load Required Packages: to be increased over the course
+options(contrasts=c("contr.treatment","contr.treatment"))
+requiredPackages <- c("FactoMineR","car", "factoextra","ggplot2","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+
+```
+
+## Load already prepared sample of 5000 records 
+
+```{r}
+# Clear plots
+if(!is.null(dev.list())) dev.off()
+
+# Clean workspace
+rm(list=ls())
+
+load("sampleWithNoMiss.RData"); dim(df)
+names(df)
+```
+
+# Data Preparation
+
+```{r}
+names(df)
+
+# quitar fnlwght
+
+#lista de variables continuas y variables discretas
+vars_con<-names(df)[c(1,5,11:13)];vars_con
+vars_dis<-names(df)[c(2,4,6:10,14:28)];vars_dis
+vars_res<-names(df)[c(13,15,27)];vars_res
+
+# summary de ciertas columnas [,]si se deja en blanco -> toda la dimenasión
+summary(df[,vars_con])
+summary(df[,vars_dis])
+```
+
+# PCA
+
+```{r}
+
+# In a previous class we discussed basic issues
+# quanti.sup = hours-per-week
+vars_con
+res.pca<-PCA(df[,vars_con],quanti.sup = 5)
+
+# Use factors related target hr.per.week - use condes()
+
+res.pca<-PCA(df[,vars_con],quanti.sup = 5)
+
+# Use qualitive variables
+# incluir variables relacionadas (factores) que salian en el condes -> quali.sup = las que se han añadido
+# no muchas variables 
+names(df)
+res.pca<-PCA(df[,c(vars_con,"Y.bin","f.hoursPW","f.education","sex","f.occupation","f.age")],quanti.sup = 5,quali.sup=6:11)
+
+
+# I-How many axes?
+
+summary(res.pca,nb.dec=2,nbelements = Inf,nbind = 0)
+
+# Kaiser - All dims with vap > 1
+
+barplot(res.pca$eig[,1])
+
+# Modern facilities: factoextra
+
+fviz_eig(res.pca,addlabels=T)
+
+# II-Take a look to individuals
+
+plot(res.pca,choix="ind",label="none",col.ind="grey80")
+
+plot(res.pca,choix="ind",select="contrib 10",cex=0.5)
+
+# Dim 1
+# res.pca$ind$contrib[,1]
+Boxplot(res.pca$ind$contrib[,1])
+rang1<-order(res.pca$ind$contrib[,1],decreasing = T)
+rang1[1:10]
+rownames(df[rang1[1:10],])
+ll<-which(res.pca$ind$coord[,2]<(-5));length(ll)
+
+# Who is who?
+
+# mirar los contributivos y si hay alguno "raro" eliminarlo, sino ponerlo como suplementario?
+df[ll,c(vars_con,vars_dis)]
+
+# Repeat for all significant dimensions ...
+
+# Modern facilities
+fviz_pca_ind(res.pca, col.ind="contrib", geom = "point", gradient.cols = c("white", "red", "black" ))
+
+# III-Interpret factorial axes
+
+res.pca<-PCA(df[,c(vars_con,"Y.bin","f.hoursPW","f.education","sex","f.occupation","f.age")],quanti.sup = 5,quali.sup=6:11,ncp=3)
+summary(res.pca,nb.dec=2,nbelements = Inf,nbind = 0,ncp=2)
+
+dimdesc(res.pca)
+
+# IV-Interpret factors
+
+summary(res.pca,nb.dec=2,nbelements = Inf,nbind = 0,ncp=2)
+
+plot(res.pca,choix="ind",invisible = c("ind","ind.sup"),cex=0.75)
+lines(res.pca$quali.sup$coord[1:2,1],res.pca$quali.sup$coord[1:2,2],col="blue",lwd=2) # y.bin centers
+length(res.pca$quali.sup$coord[,1])
+
+lines(res.pca$quali.sup$coord[21:24,1],res.pca$quali.sup$coord[21:24,2],col="yellow",lwd=2) # f.age centers
+
+lines(res.pca$quali.sup$coord[7:11,1],res.pca$quali.sup$coord[7:11,2],col="cyan",lwd=2) # f.edu centers
+```
+
