@@ -1,0 +1,274 @@
+---
+editor_options:
+  chunk_output_type: console
+output:
+  word_document: default
+  html_document: default
+---
+title: "Lab5_PCA"
+author: "Lidia Montero"
+date: \today
+output:
+  html_document:
+    toc: no
+    toc_depth: '4'
+  pdf_document:
+    latex_engine: pdflatex
+    number_sections: yes
+    toc_depth: 4
+    toc: yes
+  word_document:
+    toc: yes
+    toc_depth: '4'
+geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
+fontsize: 12pt
+subtitle: 'Loading data and Sample selection'
+editor_options: 
+  chunk_output_type: console
+---
+
+This is an R Markdown document. 
+We are showing some examples of EDA. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. Use * to provide emphasis such as *italics* and **bold**.
+
+Create lists: Unordered * and +     or   ordered   1. 2.  
+
+  *klll
+
+  1. Item 1
+  2. Item 2
+    + Item 2a
+    + Item 2b
+
+## Load Packages
+
+```{r}
+# Load Required Packages: to be increased over the course
+# Load Required Packages: to be increased over the course
+options(contrasts=c("contr.treatment","contr.treatment"))
+requiredPackages <- c("FactoMineR","car", "factoextra","ggplot2","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+
+```
+
+## Load Sample
+
+```{r}
+# Clear objects
+rm(list=ls())
+# Clear plots
+if(!is.null(dev.list())) dev.off()
+
+# Command or Windows-like method
+load("sampleWithNoMiss.RData")
+summary(df)
+```
+
+# Data Preparation
+
+```{r}
+names(df)
+
+# quitar fnlwght
+
+#lista de variables continuas y variables discretas
+vars_con<-names(df)[c(1,5,11:13)];vars_con
+vars_dis<-names(df)[c(2,4,6:10,14:28)];vars_dis
+vars_res<-names(df)[c(13,15)];vars_res
+
+vars_mca<-names(df)[c(10,15)]
+
+summary(df[,vars_con])
+summary(df[,vars_dis])
+```
+
+
+# CA
+
+##  f.hoursPW (factor) vs f.education 
+
+```{r}
+# Relación que hay entre 2 factores
+
+names(df)
+summary(df[,c("f.hoursPW","f.education")])
+
+# Row proportions, first dimension
+prop.table(table(df$f.education,df$f.hoursPW),1)
+
+# mirar si estan relacionadas
+# si no lo está, los % por filas serían prácticamente los mismos
+# No podríamos predecir f.hoprs por education
+
+# Column proportions, second dimension
+prop.table(table(df$f.education,df$f.hoursPW),2)
+
+# H0 (Hipótesis nula): Rows and columns are not dependent
+# Chisq.test -> Cálcula la probabilidad de la hipóteis nula
+# Párametro -> tabla de contingencia
+chisq.test(table(df$f.education,df$f.hoursPW))
+
+par(cex=0.75)
+# Contingency table
+tt<-as.data.frame.matrix(table(df[,c("f.education","f.hoursPW")]))
+res.ca<-CA(tt)
+
+# Rows
+#lines(res.ca$row$coord[,1],res.ca$row$coord[,2],col="blue",lwd=2)
+# Columns
+#lines(res.ca$col$coord[,1],res.ca$col$coord[,2],col="red",lwd=2)
+
+
+# ncp = 2 -> máximas dimensiones
+# Ndimensiones =  minim (de las categoiras -1, no sé que -1)
+# Iner*1000 contribución a la inercia
+# Fijarnos en ctr que suma 100
+# Mejores representacinos -> cos2
+summary(res.ca,ncp=2)
+
+```
+
+
+##  f.hoursPW (factor) vs f.relationship
+
+```{r}
+summary(df[,c("f.hoursPW","f.relationship")])
+
+# Row proportions, first dimension
+prop.table(table(df$f.relationship,df$f.hoursPW),1)
+# Column proportions, second dimension
+prop.table(table(df$f.relationship,df$f.hoursPW),2)
+
+chisq.test(table(df$f.relationship,df$f.hoursPW))
+
+par(cex=0.75)
+# Contingency table
+tt<-as.data.frame.matrix(table(df[,c("f.relationship","f.hoursPW")]))
+res.ca2<-CA(tt)
+
+# Rows
+#lines(res.ca2$row$coord[,1],res.ca2$row$coord[,2],col="blue",lwd=2)
+# Columns
+#lines(res.ca2$col$coord[,1],res.ca2$col$coord[,2],col="red",lwd=2)
+
+summary(res.ca2,ncp=2)
+```
+
+
+
+
+# MCA
+
+```{r}
+# Relacionar categorías de factores de muchas variables
+# Original factors with many caterogires: forget them
+
+# variables suplementarias pueden ser númericas y factores
+# Variables suplementarias por defecto -> f.hoursPW y Y.bin (quali) hoursperweek (quanti)
+names(df)
+# quali y quanti hay que poner el número respecto al df que le pasas a MCA (3 primeras suplementarias)
+# el resto son los factores creados y la variable sex
+res.mca<-MCA(df[,c(13,15,27,10,16:26)], quali.sup = 2:3, quanti.sup = 1)
+
+
+# 3r gráfico
+# COntribución de factores, variable cerca del origen poca contribución
+# 4r gráfico
+# hours per week relacionada positivamente con el primer eje
+
+# non graphical outout: customization
+# nbelements -> nmero total de categoiras que tinen los factores que on activos
+summary(res.mca,nbind = 0, nbelements = 35, ncp = 2)
+
+# tantas dimensinoes como media de valores propios -> kaiser general
+
+# v.test abs > 3 -> valor coordenada correspondiente es significativamente dirente de 0. (dim1)
+
+
+dimdesc(res.mca,prob = 0.01, axes = 1:2)
+# estimate -> categorias que estan mor encima de la media
+# más importante son las categorias que marcan el eje dim1$category,etc
+
+
+# Graphics: 
+
+## Supplementary factors only:
+plot.MCA(res.mca,invisible = c("ind","var","quanti.sup"))
+lines(res.mca$quali.sup$coord[1:2,1],res.mca$quali.sup$coord[1:2,2], col="darkblue",lwd=2) # Y.bin
+lines(res.mca$quali.sup$coord[3:7,1],res.mca$quali.sup$coord[3:7,2], col="darkgreen",lwd=2) # f.hoursPW
+
+
+# Active factors + suplementary factors
+plot.MCA(res.mca,invisible = c("ind","quanti.sup"))
+lines(res.mca$quali.sup$coord[1:2,1],res.mca$quali.sup$coord[1:2,2], col="darkblue",lwd=2) # Y.bin
+lines(res.mca$quali.sup$coord[3:7,1],res.mca$quali.sup$coord[3:7,2], col="darkgreen",lwd=2) # f.hoursPW
+
+
+# Active factors + supplementary factors, only most contributive levels
+plot.MCA(res.mca,invisible = c("ind","quanti.sup"),selectMod = "contrib 14")
+lines(res.mca$quali.sup$coord[1:2,1],res.mca$quali.sup$coord[1:2,2], col="darkblue",lwd=2) # Y.bin
+lines(res.mca$quali.sup$coord[3:7,1],res.mca$quali.sup$coord[3:7,2], col="darkgreen",lwd=2) # f.hoursPW
+
+# también es quitar los que estan en el centro
+
+
+
+
+
+```
+
+# HCPC
+
+```{r}
+
+# Prepare HCPC: How many dimensions?
+
+# -> dim 12 --> hacer mca con ncp = 12 (res.mca2 -> este objeto para el clusting jerárquico)
+mean(res.mca$eig[,1]) 
+# 12 dimensions
+
+
+# MCA with 12 dimensions
+res.mca2<-MCA(df[,c(13,15,27,10,16:26)], quali.sup = 2:3, quanti.sup = 1, ncp = 12)
+
+# HCPC
+res.hc<-HCPC(res.mca2, nb.clust = 6)
+
+(res.hc$call$t$within[1]-res.hc$call$t$within[6])/ res.hc$call$t$within[1]
+
+res.hc$call$t$within
+
+
+# Description of the clusters by the variables
+res.hc$desc.var
+
+# Description of the clusters by the individuals
+res.hc$desc.ind
+
+# Parangons
+res.hc$data.clust[which(rownames(res.hc$data.clust)%in%names(res.hc$desc.ind$para[[1]])),]
+# Dist
+res.hc$data.clust[which(rownames(res.hc$data.clust)%in%names(res.hc$desc.ind$dist[[1]])),]
+
+
+
+
+
+
+
+
+
+# COmparación entre clusters -> taulas de confusión
+
+#res.hc<-HCPC(res.mca2)
+
+
+## Kmeans -> datos de entrada son las proyecciones de MCA de tantas dimensiones como se han seleccionado
+
+```
+
+
+
+
