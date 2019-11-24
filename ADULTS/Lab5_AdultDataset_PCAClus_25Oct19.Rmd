@@ -1,8 +1,9 @@
 ---
 title: "Income Census Dataset"
 author: "Lidia Montero"
-date: \today
-editor_options: 
+date: "\today"
+output: word_document
+editor_options:
   chunk_output_type: console
 ---
 
@@ -42,7 +43,6 @@ vars_con<-names(df)[c(1,5,11:13)];vars_con
 vars_dis<-names(df)[c(2,4,6:10,14:28)];vars_dis
 vars_res<-names(df)[c(13,15,27)];vars_res
 
-# summary de ciertas columnas [,]si se deja en blanco -> toda la dimenasión
 summary(df[,vars_con])
 summary(df[,vars_dis])
 ```
@@ -54,11 +54,11 @@ summary(df[,vars_dis])
 # In a previous class we discussed basic issues
 # quanti.sup = hours-per-week
 vars_con
-res.pca<-PCA(df[,vars_con],quanti.sup = 5)
+#res.pca<-PCA(df[,vars_con],quanti.sup = 5)
 
 # Use factors related target hr.per.week - use condes()
 
-res.pca<-PCA(df[,vars_con],quanti.sup = 5)
+#res.pca<-PCA(df[,vars_con],quanti.sup = 5)
 
 # Use qualitive variables
 # incluir variables relacionadas (factores) que salian en el condes -> quali.sup = las que se han añadido
@@ -68,58 +68,144 @@ res.pca<-PCA(df[,c(vars_con,"Y.bin","f.hoursPW","f.education","sex","f.occupatio
 
 
 # I-How many axes?
-
 summary(res.pca,nb.dec=2,nbelements = Inf,nbind = 0)
 
 # Kaiser - All dims with vap > 1
-
-barplot(res.pca$eig[,1])
+barplot(res.pca$eig[,1], main = "Variance of Eigenvalues")
 
 # Modern facilities: factoextra
-
 fviz_eig(res.pca,addlabels=T)
+
 
 # II-Take a look to individuals
 
 plot(res.pca,choix="ind",label="none",col.ind="grey80")
-
 plot(res.pca,choix="ind",select="contrib 10",cex=0.5)
 
-# Dim 1
-# res.pca$ind$contrib[,1]
-Boxplot(res.pca$ind$contrib[,1])
-rang1<-order(res.pca$ind$contrib[,1],decreasing = T)
-rang1[1:10]
-rownames(df[rang1[1:10],])
-ll<-which(res.pca$ind$coord[,2]<(-5));length(ll)
-
 # Who is who?
-
 # mirar los contributivos y si hay alguno "raro" eliminarlo, sino ponerlo como suplementario?
-df[ll,c(vars_con,vars_dis)]
 
-# Repeat for all significant dimensions ...
+# Dim 1
+Boxplot(res.pca$ind$contrib[,1], main = "Contribtuions of the individuals in first dimension")
+rang1<-order(res.pca$ind$contrib[,1],decreasing = T)
+df[rang1[1:7],c(vars_con,vars_dis)]
+
+# Dim 2
+Boxplot(res.pca$ind$contrib[,2], main = "Contribtuions of the individuals in second dimension")
+rang2<-order(res.pca$ind$contrib[,2],decreasing = T)
+df[rang2[1:7],c(vars_con,vars_dis)]
+
+# Dim 3
+Boxplot(res.pca$ind$contrib[,3], main = "Contribtuions of the individuals in third dimension")
+rang3<-order(res.pca$ind$contrib[,3],decreasing = T)
+df[rang3[1:7],c(vars_con,vars_dis)]
+
 
 # Modern facilities
 fviz_pca_ind(res.pca, col.ind="contrib", geom = "point", gradient.cols = c("white", "red", "black" ))
+
+
+
+# Individual pca with ellipses 
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (nbut not "text")
+             col.ind = df$Y.bin, # color by groups
+             palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+             )
+
+
+
 
 # III-Interpret factorial axes
 
 res.pca<-PCA(df[,c(vars_con,"Y.bin","f.hoursPW","f.education","sex","f.occupation","f.age")],quanti.sup = 5,quali.sup=6:11,ncp=3)
 summary(res.pca,nb.dec=2,nbelements = Inf,nbind = 0,ncp=2)
 
+# Contributions of variables to Dimension 1
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 10)
+# Contributions of variables to Dimension 2
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 10)
+
+# Cos2 of variables to Dimension 1
+fviz_cos2(res.pca, choice = "var", axes = 1, fill = "cyan")
+# Cos2 of variables to Dimension 2
+fviz_cos2(res.pca, choice = "var", axes = 2, fill = "orange")
+
+
 dimdesc(res.pca)
+
+
 
 # IV-Interpret factors
 
 summary(res.pca,nb.dec=2,nbelements = Inf,nbind = 0,ncp=2)
 
 plot(res.pca,choix="ind",invisible = c("ind","ind.sup"),cex=0.75)
+
 lines(res.pca$quali.sup$coord[1:2,1],res.pca$quali.sup$coord[1:2,2],col="blue",lwd=2) # y.bin centers
-length(res.pca$quali.sup$coord[,1])
 
-lines(res.pca$quali.sup$coord[21:24,1],res.pca$quali.sup$coord[21:24,2],col="yellow",lwd=2) # f.age centers
+lines(res.pca$quali.sup$coord[21:24,1],res.pca$quali.sup$coord[21:24,2],col="orange",lwd=2) # f.age centers
 
-lines(res.pca$quali.sup$coord[7:11,1],res.pca$quali.sup$coord[7:11,2],col="cyan",lwd=2) # f.edu centers
+lines(res.pca$quali.sup$coord[8:13,1],res.pca$quali.sup$coord[8:13,2],col="cyan",lwd=2) # f.edu centers
+
+lines(res.pca$quali.sup$coord[16:20,1],res.pca$quali.sup$coord[16:20,2],col="red",lwd=2) # f.occupation centers
+
+lines(res.pca$quali.sup$coord[14:15,1],res.pca$quali.sup$coord[14:15,2],col="green",lwd=2) # sex centers
+
+
 ```
+
+
+
+# HCPC 
+```{r}
+res.hcpc<-HCPC(res.pca,nb.clust=6,graph=T)
+
+# suma between
+(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[6])/ res.hcpc$call$t$within[1]
+
+# Description of the clusters by the variable
+res.hcpc$desc.var
+
+# Description of the clusters by the individuals
+res.hcpc$desc.ind
+
+# Parangons
+res.hcpc$data.clust[which(rownames(res.hcpc$data.clust)%in%names(res.hcpc$desc.ind$para[[1]])),]
+# Dist
+res.hcpc$data.clust[which(rownames(res.hcpc$data.clust)%in%names(res.hcpc$desc.ind$dist[[1]])),]
+
+
+```
+
+# K means
+
+```{r}
+#res.pca$ind$coord[,1:2]
+#res.kmeans<-kmeans(res.pca$ind$coord[,1:2], 4)
+#fviz_cluster(res.kmeans, data =res.pca$ind$coord[,1:2])
+# Optimal number of clusters
+#fviz_nbclust(res.pca$ind$coord[,1:2], kmeans, method = "wss")
+#res.kmeans$betweenss/res.kmeans$totss
+
+# Optimal number of clusters
+fviz_nbclust(df[,vars_con], kmeans, method = "wss")
+
+# K-means
+res.kmeans<-kmeans(df[,vars_con],4)
+
+res.kmeans$betweenss/res.kmeans$totss
+
+# Representation
+fviz_cluster(res.kmeans, data = df[,vars_con])
+
+res.kmeans
+
+plot(df[,vars_con], col = res.kmeans$cluster)
+points(res.kmeans$centers, col = 1:2, pch = 8, cex = 2)
+
+```
+
 
